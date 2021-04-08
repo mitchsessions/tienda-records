@@ -17,34 +17,27 @@ function cargarEventListeners(){
     buscadorBtn.addEventListener('click',buscar);
     //agrega track carrito
     listaTracks.addEventListener('click',agregarTrack);
-
     //trae tracks de local storage
     document.addEventListener('DOMContentLoaded',() =>{
         articulosCarrito = JSON.parse(localStorage.getItem('carrito')) || [] ;
         carritoHTML();
     })
-
     //elimina tracks del carrito 
     carrito.addEventListener('click',eliminarTrack);
-
     //elimina carrito
     vaciarCarritoBtn.addEventListener('click', () => {
         articulosCarrito = [];
-
         limpiarHTML();
     });
 }
 
 //funciones
 function agregarTrack(e){
-    
     //e.preventDefault();
     if(e.target.classList.contains('agregar-carrito')){
         const trackSeleccionado = e.target.parentElement.parentElement;
-        leerDatosTrack(trackSeleccionado);
-        
+        leerDatosTrack(trackSeleccionado);     
     }
-    
 }
 
 function eliminarTrack(e){
@@ -61,7 +54,6 @@ function eliminarTrack(e){
 
 function leerDatosTrack(track){
     
-
     //crear un onjeto con info track
     const infoTrack = {
         imagen: track.querySelector('img').src, 
@@ -89,9 +81,6 @@ function leerDatosTrack(track){
         articulosCarrito = [...articulosCarrito, infoTrack];
     }
 
-    
-
-    //console.log(articulosCarrito);
     carritoHTML();
 }
 
@@ -135,30 +124,34 @@ function carritoHTML(){
 function limpiarHTML(){
     //forma lenta
     //contenedorCarrito.innerHTML = '';
-
     //forma eficiente 
-
     while(contenedorCarrito.firstChild){
         contenedorCarrito.removeChild(contenedorCarrito.firstChild);
-
     }
 }
 
 function almacenamientoLocal(){
-
     localStorage.setItem('carrito',JSON.stringify(articulosCarrito));
-
 }
 
 function buscar(e){
     e.preventDefault();
-    const dato = busqueda.value;
-
-    
+    //buscadorBtn.reset();
+    const res = document.querySelector('#resultado');
+    const dato = busqueda.value.toLowerCase();
+    let cont=0;
     //crear arreglo con todos los objetos disponibles
     const lista =listaTracks.getElementsByClassName('card');
     const arrg = Array.from(lista);
     let arrg2=[];
+
+
+    busqueda.value='';
+    //limpia div resultado -> resultado de busqueda
+    while(res.firstChild){
+        res.removeChild(res.firstChild);
+    }    
+
     arrg.map( (track)=>{
         const infoTrack = {
             imagen: track.querySelector('img').src, 
@@ -172,20 +165,27 @@ function buscar(e){
     });
 
     //filtrar de acuerdo a la busqueda, puede ser nombre track o productor
-
     for(let i=0;i<arrg2.length;i++){
-        var titulo = arrg2[i].titulo;
         
         if(dato.length>0){
-            if(titulo.toLowerCase() === dato || arrg2[i].productor.toLowerCase()===dato){
+            if(arrg2[i].titulo.toLowerCase() === dato || arrg2[i].productor.toLowerCase()===dato){
                 //insertar contenido html antes de los mas vistos
                 const row = document.createElement('div');
-                row.setAttribute("id","resultado");
+                
                 row.innerHTML = `
-                <div class="container" >
-                    <div class="row" >
-                        <div class="four columns" >
-                            <div class="card" >
+                <div style="
+                position: relative;
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+                padding: 0 20px;
+                box-sizing: border-box;
+                aling-items: center; 
+                justify-content: center;
+                
+                ">
+                    
+                            <div class="card"  >
                                 <img src="${arrg2[i].imagen}" class="imagen-curso u-full-width">
                                 <div class="info-card">
                                     <h4> ${arrg2[i].titulo} </h4>
@@ -194,37 +194,41 @@ function buscar(e){
                                     <a href="#" class="u-full-width button-primary button input agregar-carrito" data-id="${i}">Agregar Al Carrito</a>
                                 </div>
                             </div>
-                        </div> 
-                    </div>  
-                </div>      
+                        
+                </div>    
                 `;
 
-                barra.appendChild(row);
-                const res = document.querySelector('#resultado');
                 
+                
+                res.appendChild(row);
                 res.addEventListener('click', (e)=>{
 
                     if(e.target.classList.contains('agregar-carrito')){
                         const trackSeleccionado = e.target.parentElement.parentElement;
                         leerDatosTrack(trackSeleccionado);
-                        
                     }
 
                 });
 
-               
+               return;
                 
             }
             else{
-                const mns = "No se encontró ningun resultado";
-
+                cont++;
+                if(cont >= 12){
+                    const mns = "No se encontró ningun resultado";
+                    const error = document.createElement('p');
+                    
+                    error.innerHTML = `
+                    <div style="text-align:center; color:red;">
+                        <h2> ${mns} </h2>
+                    </div>
+                    `;
+                    res.appendChild(error);
+                }
+              
             }
         }
     }
-
-    
-    
-   
-    
-    
+ 
 }
